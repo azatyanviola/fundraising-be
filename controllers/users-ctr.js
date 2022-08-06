@@ -75,7 +75,9 @@ class UsersCtrl {
 
                 res
                     .status(200)
-                    .send({ message: 'User successfully logged' });
+                    .send({
+                        data: token,
+                    });
             } else {
                 res
                     .status(400)

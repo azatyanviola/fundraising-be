@@ -1,6 +1,6 @@
 const Users = require('../schema/users');
 const config = require('./config');
-require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 function createToken(body) {
@@ -56,6 +56,36 @@ class UsersCtrl {
 
             console.error('E, register,', err);
             res.status(500).send({ message: 'some error' });
+        }
+    }
+
+
+    static async  usersLogin(req, res) {
+        try {
+            const user = await Users.findOne({
+                email: req.body.email,
+            })
+                .lean()
+                .exec();
+            if (user && bcrypt.compareSync(req.body.password, user.password)) {
+                const token = createToken({ id: user._id, email: user.email });
+                res.cookie('token', token, {
+                    httpOnly: true,
+                });
+
+                res
+                    .status(200)
+                    .send({ message: 'User successfully logged' });
+            } else {
+                res
+                    .status(400)
+                    .send({ message: 'User not exist or password not correct' });
+            }
+        } catch (err) {
+            console.error('E, login,', err);
+            res
+                .status(500)
+                .send({ message: 'some error' });
         }
     }
 }

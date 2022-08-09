@@ -1,22 +1,29 @@
 const Users = require('../schema/users');
-const config = require('./config');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const regEx = require('../validation/regEx');
+const createToken = require('../services/jwt');
 
-function createToken(body) {
-    return jwt.sign(body, config.jwt.secretOrKey, {
-        expiresIn: config.expiresIn,
-    });   
-}
-const emailRegex =  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*\W)[A-Za-z\d\W]{8,16}$/;
+
+const emailRegex = regEx.emailRegex;
+const passwordRegex = regEx.passwordRegex;
 
 
 class UsersCtrl {
     static async usersCreate(req, res) {
+        const {email} = re.body.email;
+        if (!emailRegex.test(email)){
+            return res
+                    .status(406)
+                    .send({ message: 'Not acceptable user' });
+        }
+        if (!passwordRegex.test(req.body.password)){
+            return res
+                   .status(406)
+                   .send({ message: 'Not acceptable user' });
+        }
         try {
             let user = await Users.findOne({
-                email: req.body.email
+                 email,
             })
                 .lean()
                 .exec();
@@ -25,23 +32,12 @@ class UsersCtrl {
             }
 
             user = await Users.create({
-                name: req.body.username,
+                name: req.body.name,
                 surname: req.body.surname,
                 email: req.body.email,
                 password: req.body.password,
-                confirmPassword: req.body. confirmPassword,
                 role: req.body.role
             });
-            if (!emailRegex.test(req.body.email)){
-                return res.send({ message: 'The email does not match' });
-            }
-            if (!passwordRegex.test(req.body.password)){
-                return res.send({ message: 'The password does not match' });
-            }
-
-            if(req.body.password !== req.body.confirmPassword){
-                return res.send({ message: 'Passwords must be the same' });
-              }
 
             const token = createToken({ id: user._id, email: user.email });
 
@@ -49,21 +45,22 @@ class UsersCtrl {
                 httpOnly: true,
             });
 
-            res.status(200).send({
+            res.status(201).send({
                 data: user,
             });
         } catch (err) {
-
-            console.error('E, register,', err);
-            res.status(500).send({ message: 'some error' });
+            res
+              .status(500)
+              .send({ message: 'Internal server error' });
         }
     }
 
 
     static async  usersLogin(req, res) {
+        const {email} = re.body.email;
         try {
             const user = await Users.findOne({
-                email: req.body.email,
+                email,
             })
                 .lean()
                 .exec();
@@ -80,18 +77,16 @@ class UsersCtrl {
                     });
             } else {
                 res
-                    .status(400)
-                    .send({ message: 'User not exist or password not correct' });
+                    .status(404)
+                    .send({ message: 'User not found' });
             }
         } catch (err) {
-            console.error('E, login,', err);
             res
-                .status(500)
-                .send({ message: 'some error' });
+             .status(500)
+             .send({ message: 'Internal server error' });
         }
     }
 }
 
-module.exports = {
-    UsersCtrl,
-};
+module.exports = {UsersCtrl};
+

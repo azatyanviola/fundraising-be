@@ -1,24 +1,24 @@
 require('dotenv').config();
-const PORT = process.env.PORT || 3001;
-
 const express = require('express');
-const app = express();
 const http = require('http');
-const server = http.createServer(app);
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-require('./controllers/config');
+require('./configs/config');
 const passport = require('passport');
 const { Strategy } = require('passport-jwt');
-const { jwt } = require('./controllers/config');
-const path = require('path');
+const { jwt } = require('./configs/config');
+const usersRouter = require('./routers/users-rt');
 
-const db = {
-    url: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
-};
+const PORT = process.env.PORT || 3001;
+const app = express();
+const server = http.createServer(app);
+
 
 (async () => {
-    await mongoose.connect(db.url);
+    await mongoose.connect(process.env.DB_URL);
+    await server.listen(PORT, () => {
+        console.log(`Server started on port ${PORT}`);
+    });
 })();
 
 passport.use(new Strategy(jwt, ((jwtPayload, done) => {
@@ -31,14 +31,8 @@ passport.use(new Strategy(jwt, ((jwtPayload, done) => {
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-const usersRouter = require('./routers/users-rt');
-app.use('/', usersRouter);
+app.use('/auth', usersRouter);
 
 
 
 
-
-server.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-});

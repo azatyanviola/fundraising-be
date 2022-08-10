@@ -10,18 +10,18 @@ const passwordRegex = regEx.passwordRegex;
 
 class UsersCtrl {
     static async usersCreate(req, res) {
-        if (!emailRegex.test(req.body.email)){
-            return res
-                    .status(406)
-                    .send({ message: 'Not acceptable user' });
-        }
-        if (!passwordRegex.test(req.body.password)){
-            return res
-                   .status(406)
-                   .send({ message: 'Not acceptable user' });
-        }
+        const {email} = req.body;
         try {
-            const {email} = req.body.email;
+            if (!emailRegex.test(email)){
+                return res
+                        .status(406)
+                        .send({ message: 'Not acceptable user' });
+            }
+            if (!passwordRegex.test(req.body.password)){
+                return res
+                       .status(406)
+                       .send({ message: 'Not acceptable user' });
+            }
             let user = await Users.findOne({
                  email,
             })
@@ -57,9 +57,10 @@ class UsersCtrl {
 
 
     static async  usersLogin(req, res) {
+        const {email} = req.body;
         try {
             const user = await Users.findOne({
-                email: req.body.email,
+                email,
             })
                 .lean()
                 .exec();
@@ -68,7 +69,6 @@ class UsersCtrl {
                 res.cookie('token', token, {
                     httpOnly: true,
                 });
-
                 return res
                     .status(200)
                     .send({

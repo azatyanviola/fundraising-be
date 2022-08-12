@@ -2,6 +2,8 @@ const Users = require('../schema/users');
 const bcrypt = require('bcrypt');
 const regEx = require('../validation/regEx');
 const createToken = require('../services/jwt');
+require('dotenv').config();
+const { sendEmail } = require('../services/mailer.js');
 
 
 const emailRegex = regEx.emailRegex;
@@ -10,6 +12,7 @@ const passwordRegex = regEx.passwordRegex;
 
 class UsersCtrl {
     static async usersCreate(req, res) {
+        console.log(req.body);
         const {email} = req.body;
         try {
             if (!emailRegex.test(email)){
@@ -40,10 +43,34 @@ class UsersCtrl {
             });
 
             const token = createToken({ id: user._id, email: user.email });
-
-            res.cookie('token', token, {
-                httpOnly: true,
-            });
+    
+            const html = `
+                <img 
+                    alt="Header" 
+                    style="
+                        width: 600px; 
+                        height: 200px"
+                >
+                <h3>Hey there</h3>
+                <p>You recently registered on startupfundraising.eu with this email address ${email}.</p>
+                <p>To confirm this email address, please push the confirm button below.</p>
+                <p><a target="_" href="${DOMAIN}/confirm/${token}">
+                    <button style="
+                        cursor: pointer; 
+                        height: 42px; 
+                        width: 110px; 
+                        background-color: #0077B5; 
+                        border-radius: 8px; 
+                        border: none; 
+                        color: white"
+                    >Confirm</button>
+                </a></p>
+            `;
+    
+            await sendEmail({toUser: user, sendingInfo: {
+                subject: "You're almost there...",
+                html
+            }});
 
             res.status(201).send({
                 data: user,
@@ -65,10 +92,8 @@ class UsersCtrl {
                 .lean()
                 .exec();
             if (user && bcrypt.compareSync(req.body.password, user.password)) {
-                const token = createToken({ id: user._id, email: user.email });
-                res.cookie('token', token, {
-                    httpOnly: true,
-                });
+            const token = createToken({ id: user._id, email: user.email });
+                
                 return res
                     .status(200)
                     .send({
@@ -85,7 +110,18 @@ class UsersCtrl {
              .send({ message: 'Internal server error' });
         }
     }
-}
 
+    
+    static async getUser(req, res) {
+        const { id } = req.params;
+
+        const user = await Users.findOne({ _id: id });
+
+        return res.send({
+            data:user,
+        });
+    }
+
+}
 module.exports = {UsersCtrl};
 

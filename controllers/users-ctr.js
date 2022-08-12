@@ -6,6 +6,7 @@ require('dotenv').config();
 const { sendEmail } = require('../services/mailer.js');
 
 
+
 const emailRegex = regEx.emailRegex;
 const passwordRegex = regEx.passwordRegex;
 
@@ -121,6 +122,33 @@ class UsersCtrl {
             data:user,
         });
     }
+
+
+    static async userActivate(req, res) {
+        const { id } = res.locals;
+        let newUser;
+    
+        try {
+            const deletedUser = await Users.findByIdAndRemove(id);
+            const { name, surname, email, password, role } = deletedUser;
+            
+                newUser = await Users.create({
+                    name,
+                    surname,
+                    email,
+                    password,
+                    role
+                });
+    
+            const token = createToken({ id: user._id, email: user.email });
+    
+            return res.json(token); 
+        }
+        catch (err) {
+            return res.status(422).send(err.message);
+        }
+    }
+    
 
 }
 module.exports = {UsersCtrl};

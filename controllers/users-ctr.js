@@ -15,7 +15,6 @@ const passwordRegex = regEx.passwordRegex;
 class UsersCtrl {
     static async usersCreate(req, res) {
         const {email} = req.body;
-        try {
             if (!emailRegex.test(email)){
                 return res
                         .status(406)
@@ -33,7 +32,7 @@ class UsersCtrl {
                 .exec();
             if (user) {
                 return res.status(400).send({ message: 'User already exist' });
-            }
+            }else {
 
             user = await Users.create({
                 name: req.body.name,
@@ -46,26 +45,15 @@ class UsersCtrl {
             res.status(201).send({
                 data: user,
             });
-        } catch (err) {
-            res
-              .status(500)
-              .send({ message: 'Internal server error' });
-        }
-
+         
         const token = createToken({ id: user._id, email: user.email });
 
         // Send email (use credintials of SendGrid)
         const transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
         const mailOptions = { from: 'ani@startupbenefits.eu', to: user.email, subject: 'Account Verification Link', text: 'Hello '+ req.body.name +',\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + user.email + '\/' + token.token + '\n\nThank You!\n' };
-         transporter.sendMail(mailOptions, function (err) {
-                if (err) { 
-                    return res.status(500).send({msg:'Technical Issue!, Please click on resend for verify your Email.'});
-                 }
-                return res.status(200).send('A verification email has been sent to ' + user.email + '. It will be expire after one day. If you not get verification Email click on resend token.');
-            });
+        }
+
     }
-
-
     static async  usersLogin(req, res) {
         const {email} = req.body;
         try {
@@ -109,7 +97,7 @@ class UsersCtrl {
 
 
     static async userActivate (req, res, next) {
-        const {token} = req.params.token;
+        const {token} = req.body.token;
             // token is not found into database i.e. token may have expired 
             if (!token){
                 return res.status(400).send({msg:'Your verification link may have expired. Please click on resend for verify your Email.'});

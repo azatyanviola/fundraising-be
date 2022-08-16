@@ -7,6 +7,8 @@ usersRouter.post('/login', UsersCtrl.usersLogin);
 usersRouter.get('/me', UsersCtrl.getUser);
 usersRouter.get('/confirm', UsersCtrl.userActivate);
 usersRouter.post('/resend_link', UsersCtrl.resendLink);
+usersRouter.post('/reset_password/send_email', UsersCtrl.sendPasswordChangigEmail);
+usersRouter.post('/reset_password', UsersCtrl.resetPassword);
 
 
 

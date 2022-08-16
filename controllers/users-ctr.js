@@ -159,7 +159,7 @@ class UsersCtrl {
         
                     // Send email (use credintials of SendGrid)
                         const transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
-                        const mailOptions = { from: 'no-reply@example.com', to: user.email, subject: 'Account Verification Link', text: 'Hello '+ user.name +',\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + user.email + '\/' + token.token + '\n\nThank You!\n' };
+                        const mailOptions = { from: 'ani@startupbenefits.eu', to: user.email, subject: 'Account Verification Link', text: 'Hello '+ user.name +',\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + user.email + '\/' + token.token + '\n\nThank You!\n' };
                         transporter.sendMail(mailOptions, function (err) {
                            if (err) { 
                             return res.status(500).send({message:'Technical Issue!, Please click on resend for verify your Email.'});
@@ -168,6 +168,45 @@ class UsersCtrl {
                     });
                 }
             });
+        }
+
+      static async sendPasswordChangigEmail (req, res) {
+            try {
+                const { email } = req.body;
+        
+                const token = createToken({ id: user._id, email: user.email });
+        
+               // Send email (use credintials of SendGrid)
+                const transporter = nodemailer.createTransport(
+                  sendgridTransport({
+                     auth:{
+                       api_key:process.env.SENDGRID_APIKEY,
+                  }
+               })
+               )
+             let mailOptions = { from: 'ani@startupbenefits.eu', to: user.email, subject: 'Account Verification Link', text: 'Hello '+ req.body.name +',\n\n' + 'To reset your password in Startup Fundraising push the button below: \nhttp:\/\/' + req.headers.host + '\/' + user.email + '\/' + token.token + '\n\nThank You!\n' };
+            }
+            catch(err) {
+                return res.status(422).send(`Error with sending email: ${err.message}`);
+            }
+        }
+        
+        static async resetPassword (req, res) {
+            const { email } = res.locals;
+        
+            try {
+                const { password } = req.body;
+                const user = await Users.findOne({ email });
+        
+                const hashedPassword = await bcrypt.hash(password, 12);
+                user.password = hashedPassword;
+                await user.save();
+        
+                return res.sendStatus(200);
+            }
+            catch(err) {
+                return res.status(422).send(err.message);
+            }
         }
   
  }

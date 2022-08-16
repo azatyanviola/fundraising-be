@@ -8,6 +8,7 @@ const passport = require('passport');
 const { Strategy } = require('passport-jwt');
 const { jwt } = require('./configs/config');
 const usersRouter = require('./routers/users-rt');
+const authRouter = require('./routers/auth-rt');
 const cors = require('cors');
 
 const PORT = process.env.PORT || 3001;
@@ -33,6 +34,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/auth', usersRouter);
+app.use('/auth', authRouter);
 app.use(cors({
     origin: '*'
 }));

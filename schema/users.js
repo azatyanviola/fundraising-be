@@ -22,6 +22,10 @@ const UserSchema = new Schema(
         role: { 
             type: String, 
             default: 'bronze'
+        },
+        isVerified: { 
+            type: Boolean, 
+            default: false 
         }
     }
     

@@ -59,7 +59,7 @@ class UsersCtrl {
         console.log('success');
       } catch (err) {
         console.error('Failed to send email', err);
-        res.send({ succuss: false, err });
+        res.send({ message:'Internal server error'});
       }
     }
   }

@@ -36,9 +36,13 @@ class UsersCtrl {
         role: req.body.role
       });
 
-      // res.status(201).send({
-      //   data: user,
-      // });
+      res.status(201).send({
+         data:[ 
+          user.name,
+          user.surname, 
+          user.email
+         ]
+      });
 
       const token = createToken({ id: user._id, email: user.email });
       const mailOptions = {
@@ -51,13 +55,15 @@ class UsersCtrl {
       };
       try {
         await sendMail(mailOptions);
-        res.send({ succuss: true });
+        console.log('success');
       } catch (err) {
         console.error('Failed to send email', err);
         res.send({ succuss: false, err });
       }
     }
   }
+
+
   static async usersLogin(req, res) {
     const { email } = req.body;
     try {
@@ -66,6 +72,9 @@ class UsersCtrl {
       })
         .lean()
         .exec();
+      if (!user.isVerified) {
+          return res.status(401).send({ message: 'Your Email has not been verified. Please click on resend' });
+      }
       if (user && bcrypt.compareSync(req.body.password, user.password)) {
         const token = createToken({ id: user._id, email: user.email });
 
@@ -75,9 +84,7 @@ class UsersCtrl {
             data: token,
           });
       }
-      if (!user.isVerified) {
-        return res.status(401).send({ message: 'Your Email has not been verified. Please click on resend' });
-      } else {
+ else {
         return res
           .status(404)
           .send({ message: 'User not found' });
@@ -156,8 +163,15 @@ class UsersCtrl {
         const token = createToken({ id: user._id, email: user.email });
 
         // Send email (use credintials of SendGrid)
-        const mailOptions = { from: 'no-reply@example.com', to: user.email, subject: 'Account Verification Link', text: 'Hello ' + user.name + ',\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + user.email + '\/' + token.token + '\n\nThank You!\n' };
-        transporter.sendMail(mailOptions, function (err) {
+        const mailOptions = {
+          to: user.email,
+          subject: 'Account Verification Link',
+          text: `Hello ${req.body.name},
+            Please verify your account by clicking the link:
+            http://${req.headers.host}/confirmation/${user.email}/${token.token}
+            Thank You!`
+        };
+       sendMail(mailOptions, function (err) {
           if (err) {
             return res.status(500).send({ message: 'Technical Issue!, Please click on resend for verify your Email.' });
           }

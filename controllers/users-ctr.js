@@ -50,7 +50,7 @@ class UsersCtrl {
         subject: 'Account Verification Link',
         text: `Hello ${req.body.name},
           Please verify your account by clicking the link:
-          http://localhost/3000/confirm/${token.token}
+          http://${req.headers.host}/confirm/${token.token}
           Thank You!`
       };
       try {
@@ -172,7 +172,7 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            http://localhost/3000/confirm/${token.token}
+            http://${req.headers.host}/confirm/${token.token}
             Thank You!`
         };
        sendMail(mailOptions, function (err) {

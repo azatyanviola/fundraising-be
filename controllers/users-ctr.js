@@ -51,7 +51,7 @@ class UsersCtrl {
         subject: 'Account Verification Link',
         text: `Hello ${req.body.name},
           Please verify your account by clicking the link:
-          'http://localhost:3000/confirm/magic_link'
+          http://${req.headers.host}/confirm/${token.token}
           Thank You!`
       };
       try {
@@ -104,7 +104,12 @@ class UsersCtrl {
     const user = await Users.findOne({ _id: id });
 
     return res.send({
-      data: user,
+      data:[ 
+        user.name,
+        user.surname, 
+        user.email,
+        user.role
+       ]
     });
   }
 
@@ -169,7 +174,7 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            'http://localhost:3000/confirm/magic_link'
+            http://${req.headers.host}/confirm/${token.token}
             Thank You!`
         };
        sendMail(mailOptions, function (err) {

@@ -7,7 +7,7 @@ const { sendPasswordChangigEmail, resetPassword, googleAuthentication, linkedinA
 
 
 authRouter.post('/magic_login', sendPasswordChangigEmail);
-authRouter.post('/reset-password', jwtAuth, resetPassword);
+authRouter.post('/reset_password', jwtAuth, resetPassword);
 authRouter.post('/register', jwtAuth, userRegisterViaLinkedinAndGoogle);
 authRouter.post('/linkedin', linkedinAuthentication);
 authRouter.post('/google', googleAuthentication );

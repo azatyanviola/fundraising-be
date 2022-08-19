@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-require('dotenv');
 const { OAuth2Client } = require('google-auth-library');
 const { Users } = require('../schema/users');
 const { getAccessToken, getUserEmail, getUserProfile } = require('../services/methods');
 const createToken = require('../services/jwt');
+const { sendMail } = require('../services/mailer');
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
@@ -41,34 +41,32 @@ const userRegisterViaLinkedinAndGoogle = async (req, res) => {
 
 
 const sendPasswordChangigEmail = async(req, res) => {
-    try {
         const { email } = req.body;
 
         const token = createToken({ id: user._id, email: user.email });
-
-        const html = `
-            <h3>Hi</h3>
-            <p>To reset your password in Startup Fundraising push the button below.</p>
-            <p><a target="_" href="${DOMAIN}/reset-password/${token}">
-                <button style=" cursor: pointer; height: 42px; width: 110px; background-color: #0077B5; border-radius: 8px; border: none; color: white" >
-                    Reset password
-                </button>
-            </a></p>
-        `
-        const subject = 'Change password';
-
         const user = await Users.findOne({email});
         if(user && user.isLinkedinUser) return res.status(400).send("Can't reset the password of Linkedin users");
         if(user && user.isGoogleUser) return res.status(400).send("Can't reset the password of Google users");
 
-        await sendEmail({ toUser: {email}, sendingInfo: { subject, html }});
-        return res.send('Email has been sent successfuly');
-    }
-    catch(err) {
-        return res.status(422).send(`Error with sending email: ${err.message}`);
-    }
-}
-
+        const mailOptions = {
+            to: user.email,
+            subject: 'Account Verification Link',
+            text: `Hello ${req.body.name},
+              Please verify your account by clicking the link:
+              http://${req.headers.host}/reset-password/${token.token}
+              Thank You!`
+          };
+          try {
+            await sendMail(mailOptions);
+            console.log('success');
+            return res.send({message:'Email has been sent successfuly'});
+          } catch (err) {
+            console.error('Failed to send email', err);
+            res.send({message:'Internal server error'});
+          }
+    
+       }
+    
 const resetPassword = async(req, res) => {
     const { email } = res.locals;
 
@@ -83,7 +81,7 @@ const resetPassword = async(req, res) => {
         return res.sendStatus(200);
     }
     catch(err) {
-        return res.status(422).send(err.message);
+        return res.status(422).send({message:'Email has been sent successfuly'});
     }
 }
 

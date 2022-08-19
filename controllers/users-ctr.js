@@ -40,7 +40,8 @@ class UsersCtrl {
          data:[ 
           user.name,
           user.surname, 
-          user.email
+          user.email,
+          user.role
          ]
       });
 
@@ -50,7 +51,7 @@ class UsersCtrl {
         subject: 'Account Verification Link',
         text: `Hello ${req.body.name},
           Please verify your account by clicking the link:
-          http://${req.headers.host}/confirmation/${user.email}/${token.token}
+          'http://localhost:3000/confirm/magic_link'
           Thank You!`
       };
       try {
@@ -168,7 +169,7 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            http://${req.headers.host}/confirmation/${user.email}/${token.token}
+            'http://localhost:3000/confirm/magic_link'
             Thank You!`
         };
        sendMail(mailOptions, function (err) {

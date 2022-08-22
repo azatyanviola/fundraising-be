@@ -183,14 +183,14 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            http://${req.headers.host}/confirm/${token}
+            http://${req.headers.host}/resend_link/${token}
             Thank You!`
         };
        sendMail(mailOptions, function (err) {
           if (err) {
             return res.status(500).send({ message: 'Technical Issue!, Please click on resend for verify your Email.' });
           }
-          return res.status(200).send({ message: 'A verification email has been sent to ' + user.email + '. It will be expire after one day. If you not get verification Email click on resend token.' });
+          return res.status(200).send({ data: token });
         });
       }
   }

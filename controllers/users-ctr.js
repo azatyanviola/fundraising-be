@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { emailRegex, passwordRegex } = require('../validation/regEx');
 const createToken = require('../services/jwt');
 const { sendMail } = require('../services/mailer');
+const jwt = require('jsonwebtoken');
 
 console.log()
 
@@ -51,7 +52,7 @@ class UsersCtrl {
         subject: 'Account Verification Link',
         text: `Hello ${req.body.name},
           Please verify your account by clicking the link:
-          http://${req.headers.host}/confirm/${token.token}
+          http://${req.headers.host}/confirm/${token}
           Thank You!`
       };
       try {
@@ -99,10 +100,9 @@ class UsersCtrl {
 
 
   static async getUser(req, res) {
-    const { id } = req.params;
-
+    const { id } = req.body;
     const user = await Users.findOne({ _id: id });
-
+     console.log(user);
     return res.send({
       data:[ 
         user.name,
@@ -115,14 +115,22 @@ class UsersCtrl {
 
 
   static async userActivate(req, res, next) {
-    const { token } = req.body.token;
-    // token is not found into database i.e. token may have expired 
+    const { token } = req.body;
+    // token is not found into database i.e. token may have expired
     if (!token) {
       return res.status(400).send({ message: 'Your verification link may have expired. Please click on resend for verify your Email.' });
     }
-    // if token is found then check valid user 
+    // if token is found then check valid user
     else {
-      Users.findOne({ _id: token._userId, email: req.body }, function (err, user) {
+      const { id, email } = jwt.decode(token);
+      console.log(id, email, "id", "email");
+      let user;
+      try {
+        user = await Users.findOne({ id, email });
+      } catch (err) {
+        console.log(err)
+      };
+      console.log(user, "user")
         // not valid user
         if (!user) {
           return res.status(401).send({ message: 'We were unable to find a user for this verification. Please SignUp!' });
@@ -135,26 +143,27 @@ class UsersCtrl {
         else {
           // change isVerified to true
           user.isVerified = true;
-          user.save(function (err) {
-            // error occur
-            if (err) {
-              return res.status(500).send({ message: err.message });
-            }
+          user.save()
             // account successfully verified
-            else {
-              return res.status(200).send({ message: 'Your account has been successfully verified' });
-            }
-          });
+          console.log(user, "veryfied-user");
+          return res.status(200).send({ message: 'Your account has been successfully verified' });
+
+          
         }
-      });
     }
 
   }
 
   static async resendLink(req, res, next) {
-
-    Users.findOne({ email: req.body.email }, function (err, user) {
-      // user is not found into database
+    const {  email } = req.body;
+    console.log( email, "email");
+    let user;
+    try {
+      user = await Users.findOne({email: email });
+    } catch (err) {
+      console.log(err)
+    };
+    console.log(user, "user")
       if (!user) {
         return res.status(400).send({ message: 'We were unable to find a user with that email. Make sure your Email is correct!' });
       }
@@ -174,7 +183,7 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            http://${req.headers.host}/confirm/${token.token}
+            http://${req.headers.host}/confirm/${token}
             Thank You!`
         };
        sendMail(mailOptions, function (err) {
@@ -184,7 +193,6 @@ class UsersCtrl {
           return res.status(200).send({ message: 'A verification email has been sent to ' + user.email + '. It will be expire after one day. If you not get verification Email click on resend token.' });
         });
       }
-    });
   }
 
 }

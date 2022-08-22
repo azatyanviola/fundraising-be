@@ -4,19 +4,15 @@ const PlanObj = new Schema(
     {
         name: { 
             type: String,
-            required: true
         },
         customer: { 
             type: String,
-            required: true
         },
         productId: { 
             type: Number,
-            required: true
         },  
         subscription: { 
             type: Boolean,
-            required: true
         },
         billingDate: {
             type: Date,

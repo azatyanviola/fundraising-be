@@ -1,10 +1,7 @@
 const express = require("express");
 const Stripe = require("stripe");
-const { Users } = require('../schema/stripe.js');
-
-
-require("dotenv").config();
-
+const { Users } = require('../schema/users');
+const { PlanObj } = require('../schema/stripe');
 const stripe = Stripe(process.env.STRIPE_KEY);
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
@@ -18,17 +15,12 @@ const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 //check out session example
 //app.post("/create_checkout_session", express.json({ type: 'application/json' }),
 const createCheckoutSession = async (req, res) => {
-    console.log("fires", req?.body)
-    if (!req.body) res.status(500).json({ error: "No body" });
-
-    const { title, product_id } = req.body
-    // const title = "bronze"
-    // const product_id = product_;
+   const { name, product_id } = req.body
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             mode: "subscription",
-            metadata: { product_id, title },
+            metadata: { product_id, name },
             line_items: [{
                 price: product_id,
                 quantity: 1,
@@ -46,13 +38,11 @@ const createCheckoutSession = async (req, res) => {
 
 //app.post("/set_user_plan", express.json({ type: 'application/json' }), 
 const setUserPlan = async (req, res) => {
-    // console.log(req.body, "reqest body")
     const { session_id } = req.body;
     //authToken in headers
     try {
         const session = await stripe.checkout.sessions.retrieve(session_id);
         const { subscription, metadata, customer } = session;
-        //find user by authToken
         try {
             //find user with authToken
             let { current_period_end, current_period_start } = await stripe.subscriptions.retrieve(subscription);
@@ -67,6 +57,15 @@ const setUserPlan = async (req, res) => {
             });
             //create user.plan with newPlanObject as user property in database 
             //change user.role to newPlanObj.name
+            try {
+                const user = await Users.updateOne({_id:session_id},{$set:{role:req.body.role}},{
+                   new:true
+                 })
+                 console.log(req.body.role); 
+               } catch (e) {
+                 console.log(e)
+               }
+               
             res.json(newPlanObj)
         } catch (error) {
             res.status(500).send({ message: 'Internal server error' });
@@ -122,7 +121,7 @@ const  updateUsersPlan = async (req, res) => {
 ​
         let { current_period_end, current_period_start, metadata, customer, id } = response;
         const billingDate = new Date(new Date().getTime() - (current_period_end - current_period_start));
-        const newPlanObj = await Users.create({
+        const newPlanObj = await PlanObj.create({
             customer,
             billingDate,
             name: metadata.name,
@@ -137,14 +136,74 @@ const  updateUsersPlan = async (req, res) => {
     }
 }
 
+//app.post("/get_customer_card_details", express.json({ type: 'application/json' }), 
+const customerCardDetails = async (req, res) => {
+    const { customer } = req.body;
+    try {
+        const cards = await stripe.customers.listPaymentMethods(
+            customer,
+            { type: 'card' }
+        );
+        let pm = cards.data[0].id;
+        try {
+            const paymentMethod = await stripe.paymentMethods.retrieve(pm);
+            console.log(paymentMethod, "cards")
+            const { exp_month, exp_year, last4, brand } = paymentMethod.card;
+            res.json({
+                brand,
+                exp_month,
+                exp_year,
+                last4
+            })
+        } catch (err) {
+            console.log(err, "err")
+            res.status(500).send({ message: 'Internal server error' });
+        }
+    } catch (err) {
+        console.log(err, "err")
+        res.status(500).send({ message: 'Internal server error' });
+    }
+}
 
-// const updateSubscription = async () => {
-//     const session_id = "cs_test_a1zpzNXDAG2bDefawoEzFPGqutjqaBRalW6nqdRyBJg5bA5AuGJbSoS8w8";
-//     const session = await stripe.checkout.sessions.retrieve(session_id);
-//     const { subscription } = session;
-// }
+//app.post("/update_customer_card_details", express.json({ type: 'application/json' }), 
+const updateCustomerCard = async (req, res) => {
+    const { customer, number, exp_month, exp_year, cvc } = req.body;
+    try {
+        const paymentMethod = await stripe.paymentMethods.create({
+            type: 'card',
+            card: { number, exp_month, exp_year, cvc }
+        });
+        try {
+            const attached = await stripe.paymentMethods.attach(
+                paymentMethod.id,
+                {customer}
+              );
+​
+            const resp = await stripe.customers.update(
+                customer,
+                {
+                    invoice_settings:
+                        { default_payment_method: paymentMethod.id }
+                }
+            );
+            const { exp_month, exp_year, last4, brand } = paymentMethod.card;
+            res.json({
+                brand,
+                exp_month,
+                exp_year,
+                last4
+            })
+        } catch (err) {
+            console.log(err, "err")
+            res.status(500).send({ message: 'Internal server error' });
+        }
 
-// updateSubscription();
+    } catch (err) {
+        console.log(err, "err")
+        res.status(500).send({ message: 'Internal server error' });
+    }
+}
+
 
 
 //app.post('/webhook', express.raw({ type: 'application/json' }),
@@ -155,40 +214,25 @@ const webhooksHandler =  (req, res) => {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     }
     catch (err) {
+        console.log(`Unhandled event type ${type}`);
+        res.sendStatus(200)
     }
     const { type, data } = event;
-    let { previous_attributes, object } = data
-    if (type === "customer.subscription.updated") {
-        let customer_id = object.customer;
-        let product_id = object.plan.product;
-        console.log(customer_id, "customer", product_id, "product_ID")
-        if (previous_attributes.status === 'active' &&
-            object.status === 'past_due') {
-            const subId = object.id;
-            console.log(subId + " is past due date");
-            console.log(customer_id, "customer_id", product_id, "product-id");
-        }
+    let { previous_attributes, object } = data;
+
+    if (type === "customer.subscription.updated" &&
+        (previous_attributes.status === 'active' &&
+            object.status === 'past_due') ||
+        (type === "customer.subscription.deleted" &&
+            object.status !== 'active')) {
+        //change user role and plan back to initial statet
         res.sendStatus(200)
     } else {
         console.log(`Unhandled event type ${type}`);
         res.sendStatus(200)
     }
-
 }
 
-
-// const getCardDetails = async () => {
-    //update card details
-    // const cards = await stripe.customers.listSources(
-    //     "cus_MGUjxAmcLoaT0I",
-    //     { object: 'card', limit: 3 }
-    // );
-    // const card = await stripe.customers.updateSource(
-    //     customer,
-    //     {name: 'Jenny Rosen'}
-    //   );
-    //   console.log(card, "card")
-// }
 
 
 
@@ -199,5 +243,7 @@ module.exports = {
     unsubscribe,
     resubscribe,
     updateUsersPlan,
+    updateCustomerCard,
+    customerCardDetails,
     webhooksHandler
 }

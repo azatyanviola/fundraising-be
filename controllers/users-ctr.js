@@ -137,7 +137,7 @@ class UsersCtrl {
         }
         // user is already verified
         else if (user.isVerified) {
-          return res.status(200).send({ message: 'User has been already verified. Please Login' });
+          return res.status(200).send({ token: token});
         }
         // verify user
         else {

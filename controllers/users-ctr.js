@@ -100,7 +100,8 @@ class UsersCtrl {
 
 
   static async getUser(req, res) {
-    const { id } = req.body;
+    const {token} = req.body;
+    const { id } = jwt.decode(token);
     const user = await Users.findOne({ _id: id });
      console.log(user);
     return res.send({
@@ -225,31 +226,28 @@ class UsersCtrl {
 
  }
 
- static async resetPassword (req, res) {
-const { token } = req.body;
-try {
-  const { email, password } = jwt.decode(token);
-  const user = await Users.findOne({ email });
-   console.log(user)
-  const hash = await bcrypt.hash(password, 12);
-  await Users.updateOne(
-    { email: email },
-    { $set: { password: hash } },
-    { new: true }
-  );
-  // const hashedPassword = await bcrypt.hash(password, 12);
-  // user.password = hashedPassword;
-  // await user.save();
-  await password.deleteOne();
-  return res.send({data: token});
-}
-catch(err) {
-  return res.status(500).send({message: err});
-}
-}
+  static async resetPassword (req, res) {
+    const { token } = req.body;
+    const { id } = jwt.decode(token);
+    try{
+       const {  newPassword } = req.body;
+       const user = await Users.findById(id);
+      //  console.log(user);
+      //  const match = await bcrypt.compare(oldPassword, user.password);
+      //  if(!match) return res.status(400).send('Incorrect old password');
 
+       const hashedPassoword = await bcrypt.hash(newPassword, 12);
+       user.password = hashedPassoword;
+       await user.save();
+      console.log(user);
+      return res.sendStatus(200);
+    }
+     catch(err) {
+       return res.status(422).send(err.message);
+    }
+ 
+  }
 }
-
 
 
 module.exports = { UsersCtrl };

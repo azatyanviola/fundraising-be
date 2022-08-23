@@ -191,7 +191,7 @@ class UsersCtrl {
           if (err) {
             return res.status(500).send({ message: 'Technical Issue!, Please click on resend for verify your Email.' });
           }
-          return res.status(200).send({ data: token });
+          return res.status(200).send({ message: 'Email successfully resend!'});
         });
       }
   }

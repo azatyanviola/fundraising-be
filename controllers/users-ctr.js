@@ -5,7 +5,6 @@ const createToken = require('../services/jwt');
 const { sendMail } = require('../services/mailer');
 const jwt = require('jsonwebtoken');
 
-console.log()
 
 class UsersCtrl {
   static async usersCreate(req, res) {
@@ -105,12 +104,13 @@ class UsersCtrl {
     const user = await Users.findOne({ _id: id });
      console.log(user);
     return res.send({
-      data:[ 
-        user.name,
-        user.surname, 
-        user.email,
-        user.role
-       ]
+      data:{
+        id: user._id,
+        name: user.name,
+        surname: user.surname, 
+        email: user.email,
+        role: user.role
+      }
     });
   }
 
@@ -187,15 +187,16 @@ class UsersCtrl {
             http://${req.headers.host}/confirm/${token}
             Thank You!`
         };
-       sendMail(mailOptions, function (err) {
-          if (err) {
-            return res.status(500).send({ message: 'Technical Issue!, Please click on resend for verify your Email.' });
-          }
-          return res.status(200).send({ message: 'Email successfully resend!'});
-        });
+        try {
+          await sendMail(mailOptions);
+          console.log('success');
+          res.status(200).send({ message: 'Success' });
+        } catch (err) {
+          console.error('Failed to send email', err);
+          res.send({ message: 'Internal server error' });
+        }
       }
-  }
-
+    }
 
   
   static async magicLogin (req, res) {
@@ -210,7 +211,7 @@ class UsersCtrl {
   const mailOptions = {
       to: user.email,
       subject: 'Magic login Link',
-      text: `Hello ${req.body.name},
+      text: `Hello ${user.name},
         Please verify your account by clicking the link:
         http://${req.headers.host}/reset-password/${token}
         Thank You!`
@@ -229,25 +230,21 @@ class UsersCtrl {
   static async resetPassword (req, res) {
     const { token } = req.body;
     const { id } = jwt.decode(token);
-    try{
-       const {  newPassword } = req.body;
-       const user = await Users.findById(id);
-      //  console.log(user);
-      //  const match = await bcrypt.compare(oldPassword, user.password);
-      //  if(!match) return res.status(400).send('Incorrect old password');
-
-       const hashedPassoword = await bcrypt.hash(newPassword, 12);
+    let user = await Users.findOne({
+        id,
+    })
+      const { confirmPassword } = req.body;
+      const hashedPassoword = await bcrypt.hash(confirmPassword, 12);
        user.password = hashedPassoword;
        await user.save();
-      console.log(user);
-      return res.sendStatus(200);
+         return res.status(200).send({data: token});
     }
      catch(err) {
-       return res.status(422).send(err.message);
+       return res.status(500).send({message: 'Internal server error'});
     }
  
   }
-}
+
 
 
 module.exports = { UsersCtrl };

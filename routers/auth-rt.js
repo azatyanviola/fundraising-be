@@ -2,12 +2,10 @@ const authRouter = require('express').Router();
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const { jwtAuth } = require('../services/jwtAuth');
-const { sendPasswordChangigEmail, resetPassword, googleAuthentication, linkedinAuthentication, userRegisterViaLinkedinAndGoogle } = require('../controllers/auth-ctr');
+const {  googleAuthentication, linkedinAuthentication, userRegisterViaLinkedinAndGoogle } = require('../controllers/auth-ctr');
 
 
 
-authRouter.post('/reset-password/send-email', sendPasswordChangigEmail);
-authRouter.post('/reset-password', jwtAuth, resetPassword);
 authRouter.post('/register', jwtAuth, userRegisterViaLinkedinAndGoogle);
 authRouter.post('/linkedin', linkedinAuthentication);
 authRouter.post('/google', googleAuthentication );

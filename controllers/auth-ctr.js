@@ -39,55 +39,6 @@ const userRegisterViaLinkedinAndGoogle = async (req, res) => {
 
 
 
-
-const sendPasswordChangigEmail = async(req, res) => {
-    try {
-        const { email } = req.body;
-
-        const token = createToken({ id: user._id, email: user.email });
-
-        const html = `
-            <h3>Hi</h3>
-            <p>To reset your password in Startup Fundraising push the button below.</p>
-            <p><a target="_" href="${DOMAIN}/reset-password/${token}">
-                <button style=" cursor: pointer; height: 42px; width: 110px; background-color: #0077B5; border-radius: 8px; border: none; color: white" >
-                    Reset password
-                </button>
-            </a></p>
-        `
-        const subject = 'Change password';
-
-        const user = await Users.findOne({email});
-        if(user && user.isLinkedinUser) return res.status(400).send("Can't reset the password of Linkedin users");
-        if(user && user.isGoogleUser) return res.status(400).send("Can't reset the password of Google users");
-
-        await sendEmail({ toUser: {email}, sendingInfo: { subject, html }});
-        return res.send('Email has been sent successfuly');
-    }
-    catch(err) {
-        return res.status(422).send(`Error with sending email: ${err.message}`);
-    }
-}
-
-const resetPassword = async(req, res) => {
-    const { email } = res.locals;
-
-    try {
-        const { password } = req.body;
-        const user = await Users.findOne({ email });
-
-        const hashedPassword = await bcrypt.hash(password, 12);
-        user.password = hashedPassword;
-        await user.save();
-
-        return res.sendStatus(200);
-    }
-    catch(err) {
-        return res.status(422).send(err.message);
-    }
-}
-
-
 const linkedinAuthentication = async (req, res) => {
     const { code, redirect_uri, userToken } = req.body;
     if(!code || !redirect_uri) return res.status(400).send('Missing required parameters');
@@ -174,8 +125,6 @@ const googleAuthentication = async (req, res) => {
 
 
 module.exports = {
-    sendPasswordChangigEmail,
-    resetPassword,
     linkedinAuthentication,
     googleAuthentication,
     userRegisterViaLinkedinAndGoogle 

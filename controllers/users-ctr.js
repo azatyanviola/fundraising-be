@@ -195,6 +195,54 @@ class UsersCtrl {
       }
   }
 
+
+  
+  static async magicLogin (req, res) {
+  const { email } = req.body;
+  console.log(req.body);
+  const user = await Users.findOne({
+      email,
+    })
+ 
+  console.log(user);
+  const token = createToken({ id: user._id, email: user.email });
+  const mailOptions = {
+      to: user.email,
+      subject: 'Magic login Link',
+      text: `Hello ${req.body.name},
+        Please verify your account by clicking the link:
+        http://${req.headers.host}/reset-password/${token}
+        Thank You!`
+    };
+    try {
+      await sendMail(mailOptions);
+      console.log('success');
+      return res.send({message:'Email has been sent successfuly'});
+    } catch (err) {
+      console.error('Failed to send email', err);
+      res.send({message:'Internal server error'});
+    }
+
+ }
+
+ static async resetPassword (req, res) {
+const { token } = req.body;
+
+try {
+  const { email, password } = jwt.decode(token);
+  const user = await Users.findOne({ email });
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+  user.password = hashedPassword;
+  await user.save();
+
+  return res.send({data: token});
+}
+catch(err) {
+  return res.status(500).send({message:'Internal server error'});
+}
+}
+
 }
 
 

@@ -7,6 +7,8 @@ usersRouter.post('/login', UsersCtrl.usersLogin);
 usersRouter.get('/me', UsersCtrl.getUser);
 usersRouter.post('/confirm', UsersCtrl.userActivate);
 usersRouter.post('/resend_link', UsersCtrl.resendLink);
+usersRouter.post('/magic_login', UsersCtrl.magicLogin);
+usersRouter.post('/reset_password', UsersCtrl.resetPassword);
 
 
 

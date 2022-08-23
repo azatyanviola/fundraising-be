@@ -183,7 +183,7 @@ class UsersCtrl {
           subject: 'Account Verification Link',
           text: `Hello ${req.body.name},
             Please verify your account by clicking the link:
-            http://${req.headers.host}/resend_link/${token}
+            http://${req.headers.host}/confirm/${token}
             Thank You!`
         };
        sendMail(mailOptions, function (err) {
@@ -227,19 +227,24 @@ class UsersCtrl {
 
  static async resetPassword (req, res) {
 const { token } = req.body;
-
 try {
   const { email, password } = jwt.decode(token);
   const user = await Users.findOne({ email });
-
-  const hashedPassword = await bcrypt.hash(password, 12);
-  user.password = hashedPassword;
-  await user.save();
-
+   console.log(user)
+  const hash = await bcrypt.hash(password, 12);
+  await Users.updateOne(
+    { email: email },
+    { $set: { password: hash } },
+    { new: true }
+  );
+  // const hashedPassword = await bcrypt.hash(password, 12);
+  // user.password = hashedPassword;
+  // await user.save();
+  await password.deleteOne();
   return res.send({data: token});
 }
 catch(err) {
-  return res.status(500).send({message:'Internal server error'});
+  return res.status(500).send({message: err});
 }
 }
 

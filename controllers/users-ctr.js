@@ -48,7 +48,7 @@ class UsersCtrl {
       const token = createToken({ id: user._id, email: user.email });
       const mailOptions = registerMail({
         email: user.email,
-        name: req.body.name,
+        name: user.name,
         token,
         req
       })

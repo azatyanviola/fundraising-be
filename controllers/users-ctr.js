@@ -48,7 +48,7 @@ class UsersCtrl {
       const token = createToken({ id: user._id, email: user.email });
       const mailOptions = registerMail({
         email: user.email,
-        name: user.name,
+        username: user.name,
         token,
         req
       })
@@ -112,7 +112,7 @@ class UsersCtrl {
     return res.send({
       data: {
         id: user._id,
-        name: user.name,
+        username: user.name,
         surname: user.surname,
         email: user.email,
         role: user.role
@@ -184,13 +184,13 @@ class UsersCtrl {
       const mailOptions = process === "register" ?
         registerMail({
           email: user.email,
-          name: user.name,
+          username: user.name,
           token,
           req
         }) :
         passwordResetMail({
           email: user.email,
-          name: user.name,
+          username: user.name,
           token,
           req
         })
@@ -224,7 +224,7 @@ class UsersCtrl {
       const token = createToken({ id: user._id, email: user.email });
       const mailOptions = registerMail({
         email: user.email,
-        name: user.name,
+        username: user.name,
         token,
         req
       })
@@ -260,7 +260,7 @@ class UsersCtrl {
     //   };
     const mailOptions = registerMail({
       email: user.email,
-      name: user.name,
+      username: user.name,
       token,
       req
     })

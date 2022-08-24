@@ -52,14 +52,6 @@ class UsersCtrl {
         token,
         req
       })
-      // const mailOptions = {
-      //   to: user.email,
-      //   subject: 'Account Verification Link',
-      //   text: `Hello ${req.body.name},
-      //     Please verify your account by clicking the link:
-      //     http://${req.headers.host}/confirm/${token}
-      //     Thank You!`
-      // };
       try {
         await sendMail(mailOptions);
         console.log('success');
@@ -130,14 +122,12 @@ class UsersCtrl {
     // if token is found then check valid user
     else {
       const { id, email } = jwt.decode(token);
-      console.log(id, email, "id", "email");
       let user;
       try {
         user = await Users.findOne({ id, email });
       } catch (err) {
         console.log(err)
       };
-      console.log(user, "user")
       // not valid user
       if (!user) {
         return res.status(401).send({ message: 'We were unable to find a user for this verification. Please SignUp!' });
@@ -154,11 +144,8 @@ class UsersCtrl {
         // account successfully verified
         console.log(user, "veryfied-user");
         return res.status(200).send({ message: 'Your account has been successfully verified' });
-
-
       }
     }
-
   }
 
   static async resendLink(req, res, next) {
@@ -169,7 +156,6 @@ class UsersCtrl {
     } catch (err) {
       console.log(err)
     };
-    console.log(user, "user")
     if (!user) {
       return res.status(400).send({ message: 'We were unable to find a user with that email. Make sure your Email is correct!' });
     }
@@ -206,58 +192,13 @@ class UsersCtrl {
   }
 
 
-
-  static async resendLinkMagicLogin(req, res, next) {
-    const { email } = req.body;
-    console.log(email, "email");
-    let user;
-    try {
-      user = await Users.findOne({ email: email });
-    } catch (err) {
-      console.log(err)
-    };
-    console.log(user, "user")
-    if (!user) {
-      return res.status(400).send({ message: 'We were unable to find a user with that email. Make sure your Email is correct!' });
-    } else {
-      // generate token and save
-      const token = createToken({ id: user._id, email: user.email });
-      const mailOptions = registerMail({
-        email: user.email,
-        username: user.name,
-        token,
-        req
-      })
-      try {
-        await sendMail(mailOptions);
-        console.log('success');
-        res.status(200).send({ message: 'Success' });
-      } catch (err) {
-        console.error('Failed to send email', err);
-        res.send({ message: 'Internal server error' });
-      }
-    }
-  }
-
-
-
   static async magicLogin(req, res) {
     const { email } = req.body;
     console.log(req.body);
     const user = await Users.findOne({
       email,
     })
-
-    console.log(user);
     const token = createToken({ id: user._id, email: user.email });
-    // const mailOptions = {
-    //     to: user.email,
-    //     subject: 'Magic login Link',
-    //     text: `Hello ${user.name},
-    //       Please verify your account by clicking the link:
-    //       http://${req.headers.host}/reset-password/${token}
-    //       Thank You!`
-    //   };
     const mailOptions = registerMail({
       email: user.email,
       username: user.name,
@@ -289,7 +230,6 @@ class UsersCtrl {
   catch(err) {
     return res.status(500).send({ message: 'Internal server error' });
   }
-
 }
 
 

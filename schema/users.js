@@ -20,15 +20,24 @@ const UserSchema = new Schema(
             required: true
         },
         role: { 
-            type: String, 
+            type: String,
+            enum: ['bronze', 'silver', 'gold'], 
             default: 'bronze'
-        }
+        },
+        isVerified: { 
+            type: Boolean, 
+            default: false 
+        },
+        planObj: [{
+            type:Schema.Types.ObjectId,
+            ref: 'PlanObj'
+          }]
     }
     
 );
 
 UserSchema.pre('save', function (next) {
-    if (this.isModified('password') || this.isNew()) {
+    if (this.isModified('password') || this.isNew) {
         this.password = bcrtypt.hashSync(this.password, 12);
     }
     next();

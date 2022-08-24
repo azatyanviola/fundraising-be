@@ -10,8 +10,9 @@ function ExtractJwt(req) {
 module.exports = {
     jwt: {
         jwtFromRequest: ExtractJwt,
-        secretOrKey: 'TfbTq2NfLzqMcbVY9EpGQ2p',
+        secretOrKey: process.env.secretOrKey,
     },
 
-    expiresIn: '1 day',
+    expiresIn: '30 day',
 };
+

@@ -184,13 +184,13 @@ class UsersCtrl {
       const mailOptions = process === "register" ?
         registerMail({
           email: user.email,
-          name: req.body.name,
+          name: user.name,
           token,
           req
         }) :
         passwordResetMail({
           email: user.email,
-          name: req.body.name,
+          name: user.name,
           token,
           req
         })

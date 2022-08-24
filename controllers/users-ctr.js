@@ -198,6 +198,45 @@ class UsersCtrl {
       }
     }
 
+
+
+    static async resendLinkMagicLogin(req, res, next) {
+      const {  email } = req.body;
+      console.log( email, "email");
+      let user;
+      try {
+        user = await Users.findOne({email: email });
+      } catch (err) {
+        console.log(err)
+      };
+      console.log(user, "user")
+        if (!user) {
+          return res.status(400).send({ message: 'We were unable to find a user with that email. Make sure your Email is correct!' });
+        } else {
+          // generate token and save
+          const token = createToken({ id: user._id, email: user.email });
+  
+          // Send email (use credintials of SendGrid)
+          const mailOptions = {
+            to: user.email,
+            subject: 'Magic login Link',
+            text: `Hello ${user.name},
+              Please verify your account by clicking the link:
+              http://${req.headers.host}/reset-password/${token}
+              Thank You!`
+          };
+          try {
+            await sendMail(mailOptions);
+            console.log('success');
+            res.status(200).send({ message: 'Success' });
+          } catch (err) {
+            console.error('Failed to send email', err);
+            res.send({ message: 'Internal server error' });
+          }
+        }
+      }
+  
+
   
   static async magicLogin (req, res) {
   const { email } = req.body;

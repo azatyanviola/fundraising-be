@@ -9,6 +9,7 @@ usersRouter.post('/confirm', UsersCtrl.userActivate);
 usersRouter.post('/resend_link', UsersCtrl.resendLink);
 usersRouter.post('/magic_login', UsersCtrl.magicLogin);
 usersRouter.post('/reset_password', UsersCtrl.resetPassword);
+usersRouter.post('/resend_link_magic', UsersCtrl.resendLinkMagicLogin);
 
 
 

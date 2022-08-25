@@ -15,8 +15,8 @@ const createCheckoutSession = async (req, res) => {
    const { name, product_id } = req.body;
     try {
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            mode: "subscription",
+            payment_method_types: ['card'],
+            mode: 'subscription',
             metadata: { product_id, name },
             line_items: [{
                 price: product_id,
@@ -55,7 +55,7 @@ const setUserPlan = async (req, res) => {
             //create user.plan with newPlanObject as user property in database 
             //change user.role to newPlanObj.name
             try {
-                const user = await Users.updateOne({_id:session_id},{$set:{role:req.body.role}},{
+                let user = await Users.updateOne({_id:session_id},{$set:{role:req.body.role}},{
                    new:true
                  })
                  console.log(req.body.role); 
@@ -63,7 +63,7 @@ const setUserPlan = async (req, res) => {
                  console.log(e)
                }
                
-            res.json(newPlanObj)
+            res.send({data: newPlanObj});
         } catch (error) {
             res.status(500).send({ message: 'Internal server error' });
         }
@@ -127,7 +127,7 @@ const  updateUsersPlan = async (req, res) => {
         });
         //update user.plan in database
         try {
-            const newPlan = await PlanObj.updateOne({_id:req.params.id},{$set:{newPlanObj:req.body.newPlanObj}},{
+            let newPlan = await PlanObj.updateOne({_id:req.params.id},{$set:{newPlanObj:req.body.newPlanObj}},{
                new:true
              })
              console.log(req.body.newPlanObj); 
@@ -136,7 +136,7 @@ const  updateUsersPlan = async (req, res) => {
            }
         //update user.role in database
         
-        res.json(newPlanObj)
+        res.send({data: newPlanObj});
     } catch (err) {
         res.status(500).send({ message: 'Internal server error' });
     }
@@ -153,7 +153,7 @@ const customerCardDetails = async (req, res) => {
         let pm = cards.data[0].id;
         try {
             const paymentMethod = await stripe.paymentMethods.retrieve(pm);
-            console.log(paymentMethod, "cards")
+            console.log(paymentMethod, 'cards')
             const { exp_month, exp_year, last4, brand } = paymentMethod.card;
             res.json({
                 brand,
@@ -226,10 +226,10 @@ const webhooksHandler =  (req, res) => {
     const { type, data } = event;
     let { previous_attributes, object } = data;
 
-    if (type === "customer.subscription.updated" &&
+    if (type === 'customer.subscription.updated' &&
         (previous_attributes.status === 'active' &&
             object.status === 'past_due') ||
-        (type === "customer.subscription.deleted" &&
+        (type === 'customer.subscription.deleted' &&
             object.status !== 'active')) {
         //change user role and plan back to initial statet
         res.sendStatus(200)

@@ -1,13 +1,10 @@
-const express = require("express");
-const Stripe = require("stripe");
+//const express = require("express");
+//const Stripe = require("stripe");
 const { Users } = require('../schema/users');
 const { PlanObj } = require('../schema/stripe');
-const stripe = Stripe(process.env.STRIPE_KEY);
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
-
-
-
-//const stripe = require("stripe")("sk_test_51KLgfSCUdBOA2rvxogtALgypfQN69NCVDHyVcglZm2g5lyXq7EblhBjAA884sKc4u6XP0EnAHO1eSDUbZ7YNGMuF00oSag2iJx");
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+// const stripe = require("stripe")("sk_test_51KLgfSCUdBOA2rvxogtALgypfQN69NCVDHyVcglZm2g5lyXq7EblhBjAA884sKc4u6XP0EnAHO1eSDUbZ7YNGMuF00oSag2iJx");
 // const product_1 = "price_1LXl7UCUdBOA2rvx8UxGY9Lq"
 // const product_2 = "price_1LXxOmCUdBOA2rvxUJhsWNYm";
 // const product_3 = "price_1LY2tXCUdBOA2rvxBESduLyC";
@@ -15,7 +12,7 @@ const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 //check out session example
 //app.post("/create_checkout_session", express.json({ type: 'application/json' }),
 const createCheckoutSession = async (req, res) => {
-   const { name, product_id } = req.body
+   const { name, product_id } = req.body;
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -48,7 +45,7 @@ const setUserPlan = async (req, res) => {
             let { current_period_end, current_period_start } = await stripe.subscriptions.retrieve(subscription);
             const billingDate = new Date(new Date().getTime() - (current_period_end - current_period_start));
         
-            const newPlanObj = await Users.create({
+            const newPlanObj = await PlanObj.create({
                 customer,
                 billingDate,
                 name: metadata.name,
@@ -129,7 +126,16 @@ const  updateUsersPlan = async (req, res) => {
             subscription:id
         });
         //update user.plan in database
+        try {
+            const newPlan = await PlanObj.updateOne({_id:req.params.id},{$set:{newPlanObj:req.body.newPlanObj}},{
+               new:true
+             })
+             console.log(req.body.newPlanObj); 
+           } catch (e) {
+             console.log(e)
+           }
         //update user.role in database
+        
         res.json(newPlanObj)
     } catch (err) {
         res.status(500).send({ message: 'Internal server error' });

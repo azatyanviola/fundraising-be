@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const People = require('../schema/people');
-const Company = require('../schema/company');
+// const Company = require('../schema/company');
 const airtable = require('airtable');
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -14,65 +14,55 @@ const mongoose = require('mongoose');
 
 
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
-console.log(base)
 
-//  let randomPeople = await People.find()
-//  console.log(randomPeople)
-// // cron.schedule('*/20 * * * * *', async () => {
-// //     //const peoples = [];
-// //     try {
-
-// //         // const randomPeople = await People.findOne({}); 
-// //         // if (randomPeople) {
-//         //     await People.collection.drop();
-//         // }
-       
-//         await base('People').select({
-//             view: "Grid view"
-//         }).eachPage(function page(records) {
-//             records.forEach( async (record) => {
-//              const {  personName, 
-//                       position,   
-//                       personLinkedIn,
-//                       personEmail, 
-//                       personTwitter, 
-//                       RecordId
-//                          } = record.fields;
-//         //let randomPeople = await People.findOne({personName }); 
-//         //console.log(randomPeople)
-//         // if (randomPeople) {
-//         //     await People.findOneAndUpdate({
-//         //               position,   
-//         //               personLinkedIn,
-//         //               personEmail, 
-//         //               personTwitter, 
-//         //               RecordId
-//         //                           });
-//         // }else{
-//         //     //   randomPeople= new People({
-//             //         personName, 
-//             //         position,  
-//             //         personLinkedIn,
-//             //         personEmail, 
-//             //         personTwitter, 
-//             //         RecordId
-//             //     });
-//                 //console.log(randomPeople)
-//                 await randomPeople.save()
-//                 console.log(randomPeople)
-                
-//                 //peoples.push(people)
-//             }
-//         });
-//        // console.log(new Date().toLocaleString())
-//         // const pl = await People.create( peoples );
-//         // console.log(pl)
-//     });
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// });
+cron.schedule('* * * * * *', async () => {
+    //const peoples = [];
+    try {   
+        base('People').select({
+            view: "Grid view"
+        }).eachPage(function page(records) {
+            records.forEach( async (record) => {
+             const {  personName, 
+                      position,   
+                      personLinkedIn,
+                      personEmail, 
+                      personTwitter, 
+                      RecordId
+                         } = record.fields;
+        // let randomPeople = await People.findOne({personName }); 
+        // console.log(randomPeople)
+        // if (randomPeople) {
+            let updated = await People.findOneAndUpdate({personName},()=> ({
+                    //   position,   
+                    //   personLinkedIn,
+                    //   personEmail, 
+                    //   personTwitter, 
+                    //   RecordId
+                                  }));
+            console.log(updated, "update");
+            if(!updated) {
+                let randomPeople= new People({
+                    personName, 
+                    position,  
+                    personLinkedIn,
+                    personEmail, 
+                    personTwitter, 
+                    RecordId
+                });
+                console.log(randomPeople)
+                await randomPeople.save()
+                console.log(randomPeople)
+            }             
+        });
+    //    console.log(new Date().toLocaleString())
+    //     const pl = await People.create( peoples );
+    //     console.log(pl)
+    });
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
 
 
 

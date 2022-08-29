@@ -2,9 +2,9 @@ const { Schema, model } = require('mongoose');
 
 const PeopleSchema = new Schema(
     {
-        name: { 
+        personName: { 
             type: String,
-            required: true
+            required: false
         },
         position: { 
             type: String,
@@ -12,20 +12,34 @@ const PeopleSchema = new Schema(
         },
         personLinkedIn: { 
             type: String,
-            required: false
+            required: false,
+            unique: true,
+            index:true, 
+            unique:true,
+            sparse:true
         },
         personEmail: { 
             type: String,
-            required: false
+            required: false,
+            index:true, 
+            unique:true,
+            sparse:true
         },
         personTwitter: { 
             type: String, 
+            required: false,
+            index:true, 
+            unique:true,
+            sparse:true
+        },
+        RecordId: { 
+            type: String, 
             required: false
         },
-        created: {
-            type: Date,
-            default:Date.now,
-          },
+        // created: {
+        //     type: Date,
+        //     default:Date.now,
+        //   },
     } 
     
 );

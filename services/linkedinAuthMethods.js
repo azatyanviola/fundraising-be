@@ -16,7 +16,7 @@ async function getAccessToken(code, redirect_uri) {
   params.append("code", code);
   params.append("redirect_uri", redirect_uri);
   params.append("client_id", process.env.LINKEDIN_CLIENT_ID);
-  params.append("client_secret", process.env.LINKEDIN_CLIENT_SECRET);
+  params.append("client_secret", process.env.LINKEDIN_CLIENT_ID);
 
   try {
     const response = await axios.post(urlToGetLinkedInAccessToken, params, config);
@@ -40,9 +40,9 @@ async function getUserProfile(accessToken) {
 
   try {
     const { data } = await axios.get(urlToGetUserProfile, config);
-    if (data["localizedFirstName"] && data["localizedLastName"]) userProfile = {};
-    userProfile.firstName = data["localizedFirstName"];
-    userProfile.lastName = data["localizedLastName"];
+    if (data["localizedName"] && data["localizedSurname"]) userProfile = {};
+    userProfile.name = data["localizedName"];
+    userProfile.surname = data["localizedSurname"];
   }
   catch (err) {
     console.log(err);

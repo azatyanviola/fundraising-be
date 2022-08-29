@@ -28,6 +28,12 @@ const UserSchema = new Schema(
             type: Boolean, 
             default: false 
         },
+        isLinkedinUser: {
+            type: Boolean
+        },
+        isGoogleUser: {
+            type: Boolean 
+        },
         planObj: [{
             type:Schema.Types.ObjectId,
             ref: 'PlanObj'

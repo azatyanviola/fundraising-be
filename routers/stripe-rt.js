@@ -7,8 +7,7 @@ const {
        updateUsersPlan,
        customerCardDetails,
        updateCustomerCard,
-       webhooksHandler
-                     } = require('../controllers/stripe-ctr');
+       webhooksHandler } = require('../controllers/stripe-ctr');
 
 
 stripeRouter.post('/create_checkout_session', createCheckoutSession);

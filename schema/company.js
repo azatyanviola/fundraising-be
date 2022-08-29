@@ -2,15 +2,15 @@ const { Schema, model } = require('mongoose');
 
 const CompanySchema = new Schema(
     {
-        name: { 
-            type: String,
-            required: true
-        },
-        country: { 
+        Name: { 
             type: String,
             required: false
         },
-        type: { 
+        Country: { 
+            type: Array,
+            required: false
+        },
+        Type: { 
             type: Object,
             name:{
                 type:String
@@ -20,75 +20,67 @@ const CompanySchema = new Schema(
                 default: 0
             }
         },
-        investment: { 
-            type: String,
+        InvestmentIndustryOrTechnology: { 
+            type: Array,
             required: false
         },
-        stage: { 
+        Stage: { 
+            type: Array, 
+            required: false
+        },
+        InvestmentCountry: { 
+            type: Array, 
+            required: false
+        },
+        TicketSize: { 
+            type: Array, 
+            required: false
+        },
+        Range: { 
+            type: Array, 
+            required: false
+        },
+        CompanyWebsideURL: { 
             type: String, 
             required: false
         },
-        investmentCountry: { 
+        companyLinkedInURL: { 
             type: String, 
             required: false
         },
-        ticketSiza: { 
+        companyTwitterURL: { 
             type: String, 
             required: false
         },
-        range: { 
+        // companyCrunchbaseUrl: { 
+        //     type: String, 
+        //     required: false
+        // },
+        // companyInstagram: { 
+        //     type: String, 
+        //     required: false
+        // },
+        // companyYoutubeUrl: { 
+        //     type: String, 
+        //     required: false
+        // },
+        // companyMailUrl: { 
+        //     type: String, 
+        //     required: false
+        // },
+        // companyMediumUrl: { 
+        //     type: String, 
+        //     required: false
+        // },
+
+        About:{
+            type: String
+        },
+        CompanyLogo: { 
             type: String, 
             required: false
         },
-        companyWebsideUrl: { 
-            type: String, 
-            required: false
-        },
-        companyFasebook: { 
-            type: String, 
-            required: false
-        },
-        companylinkedInUrl: { 
-            type: String, 
-            required: false
-        },
-        companyTwitterUrl: { 
-            type: String, 
-            required: false
-        },
-        companyCrunchbaseUrl: { 
-            type: String, 
-            required: false
-        },
-        companyInstagram: { 
-            type: String, 
-            required: false
-        },
-        companyYoutubeUrl: { 
-            type: String, 
-            required: false
-        },
-        companyMailUrl: { 
-            type: String, 
-            required: false
-        },
-        companyMediumUrl: { 
-            type: String, 
-            required: false
-        },
-        about: { 
-            type: String, 
-            required: false
-        },
-        companyLogo: { 
-            type: Image, 
-            required: false
-        },
-        logoUrl: { 
-            type: String, 
-            required: false
-        },
-        recordId: { 
+        RecordID: { 
             type: String, 
             required: false
         },
@@ -96,10 +88,14 @@ const CompanySchema = new Schema(
             type: Date,
             default:Date.now,
           },
+        people: [{
+            type:Schema.Types.ObjectId,
+            ref: 'People'
+        }]
     } 
     
 );
 
 
 
-module.exports = model('People', PeopleSchema);
+module.exports = model('Company', CompanySchema);

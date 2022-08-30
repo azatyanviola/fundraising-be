@@ -9,99 +9,50 @@ const mongoose = require('mongoose');
 (async () => {
     await mongoose.connect(process.env.DB_URL);
     console.log('success')
-   
+
 })();
 
 
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
-// cron.schedule('* * * * * *', async () => {
-//     try {   
+// (async () => {
+//     try {
 //         base('People').select({
 //             view: "Grid view"
 //         }).eachPage(function page(records) {
-//             records.forEach( async (record) => {
-//              const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
-//              let people = await People.findOne({
-//                 personName,
-//               })
-//             if(people){
-//             let updated = await People.findOneAndUpdate({personName}, { personName, position, personLinkedIn, personEmail, personTwitter, RecordId }, { new: true });                          
-//             console.log(updated, "update");
-//             }else {
-//                 let newPeople= await   People.create({
-//                     personName, 
-//                     position,  
-//                     personLinkedIn,
-//                     personEmail, 
-//                     personTwitter, 
-//                     RecordId
-//                 });
-//                 console.log(newPeople);
-
-        
-//             }
-//           });
-
+//             records.forEach(async (record) => {
+//                 const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
+//                 let updated = await People.findOneAndUpdate({ personName }, { personName, position, personLinkedIn, personEmail, personTwitter, RecordId }, { new: true });
+//                 console.log(updated, "updated")
+//                 if (!updated) {
+//                     let newPeople = await People.create({
+//                         personName,
+//                         position,
+//                         personLinkedIn,
+//                         personEmail,
+//                         personTwitter,
+//                         RecordId
+//                     });
+//                     console.log(newPeople);
+//                 }
+//             });
 //         });
-   
-//       }
-//       catch (err) {
+//     }
+//     catch (err) {
 //         console.log(err);
 //     }
-// });
+// })();
 
 
 
 
-cron.schedule('* * * * * *', async () => {
+(async () => {
     try {
         base('Grid view').select({
             view: "Grid view"
         }).eachPage(function page(records) {
-            records.forEach( async (record) => {
-             const {  
-                name,
-                country,
-                type,
-                investmentIndustryOrTechnology,
-                stage,
-                investmentCountry,
-                ticketSize,
-                range,
-                companyWebsideURL,
-                companyLinkedInURL,
-                companyTwitterURL,
-                about,
-                //companyLogo,
-                recordID,
-                created
-                         } = record.fields;
-        let company = await Company.findOne({
-            name,
-        });  
-            
-        if (company) {
-           let updated = await Company.findOneAndUpdate({name}, {
-                name,
-                country,
-                type,
-                investmentIndustryOrTechnology,
-                stage,
-                investmentCountry,
-                ticketSize,
-                range,
-                companyWebsideURL,
-                companyTwitterURL,
-                about,
-                //companyLogo,
-                recordID,
-                created},
-                { new: true });
-                console.log(updated, 'update')
-            
-        }else{                
-            let newCompany= await Company.create({
+            records.forEach(async (record) => {
+                const {
                     name,
                     country,
                     type,
@@ -114,18 +65,53 @@ cron.schedule('* * * * * *', async () => {
                     companyLinkedInURL,
                     companyTwitterURL,
                     about,
-                  //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
+                    //companyLogo,
                     recordID,
                     created
+                } = record.fields;
+                let updated = await Company.findOneAndUpdate({ name }, {
+                    name,
+                    country,
+                    type,
+                    investmentIndustryOrTechnology,
+                    stage,
+                    investmentCountry,
+                    ticketSize,
+                    range,
+                    companyWebsideURL,
+                    companyTwitterURL,
+                    about,
+                    //companyLogo,
+                    recordID,
+                    created
+                },
+                    { new: true });
+                console.log(updated, 'update')
+                if (!updated) {
+                    let newCompany = await Company.create({
+                        name,
+                        country,
+                        type,
+                        investmentIndustryOrTechnology,
+                        stage,
+                        investmentCountry,
+                        ticketSize,
+                        range,
+                        companyWebsideURL,
+                        companyLinkedInURL,
+                        companyTwitterURL,
+                        about,
+                        //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
+                        recordID,
+                        created
+                    });
+                    console.log(newCompany);
+                }
             });
-                
-                console.log(newCompany);
-             }
-            });
-        
+
         });
     }
     catch (err) {
         console.log(err);
     }
-});
+})()

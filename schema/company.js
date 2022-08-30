@@ -2,15 +2,15 @@ const { Schema, model } = require('mongoose');
 
 const CompanySchema = new Schema(
     {
-        Name: { 
+        name: { 
             type: String,
             required: false
         },
-        Country: { 
-            type: Array,
+        country: { 
+            type: Object,
             required: false
         },
-        Type: { 
+        type: { 
             type: Object,
             name:{
                 type:String
@@ -20,27 +20,27 @@ const CompanySchema = new Schema(
                 default: 0
             }
         },
-        InvestmentIndustryOrTechnology: { 
+        investmentIndustryOrTechnology: { 
             type: Array,
             required: false
         },
-        Stage: { 
+        stage: { 
             type: Array, 
             required: false
         },
-        InvestmentCountry: { 
+        investmentCountry: { 
             type: Array, 
             required: false
         },
-        TicketSize: { 
+        ticketSize: { 
             type: Array, 
             required: false
         },
-        Range: { 
+        range: { 
             type: Array, 
             required: false
         },
-        CompanyWebsideURL: { 
+        companyWebsideURL: { 
             type: String, 
             required: false
         },
@@ -73,14 +73,14 @@ const CompanySchema = new Schema(
         //     required: false
         // },
 
-        About:{
+        about:{
             type: String
         },
-        CompanyLogo: { 
-            type: String, 
-            required: false
-        },
-        RecordID: { 
+        // companyLogo: { 
+        //     type: String, 
+        //     required: false
+        // },
+        recordID: { 
             type: String, 
             required: false
         },

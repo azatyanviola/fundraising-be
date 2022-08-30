@@ -1,6 +1,7 @@
+
 const cron = require('node-cron');
 const People = require('../schema/people');
-// const Company = require('../schema/company');
+const Company = require('../schema/company');
 const airtable = require('airtable');
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -8,142 +9,123 @@ const mongoose = require('mongoose');
 (async () => {
     await mongoose.connect(process.env.DB_URL);
     console.log('success')
-    // let randomPeople = await People.find()
-    // console.log(randomPeople)
+   
 })();
 
 
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
+// cron.schedule('* * * * * *', async () => {
+//     try {   
+//         base('People').select({
+//             view: "Grid view"
+//         }).eachPage(function page(records) {
+//             records.forEach( async (record) => {
+//              const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
+//              let people = await People.findOne({
+//                 personName,
+//               })
+//             if(people){
+//             let updated = await People.findOneAndUpdate({personName}, { personName, position, personLinkedIn, personEmail, personTwitter, RecordId }, { new: true });                          
+//             console.log(updated, "update");
+//             }else {
+//                 let newPeople= await   People.create({
+//                     personName, 
+//                     position,  
+//                     personLinkedIn,
+//                     personEmail, 
+//                     personTwitter, 
+//                     RecordId
+//                 });
+//                 console.log(newPeople);
+
+        
+//             }
+//           });
+
+//         });
+   
+//       }
+//       catch (err) {
+//         console.log(err);
+//     }
+// });
+
+
+
+
 cron.schedule('* * * * * *', async () => {
-    //const peoples = [];
-    try {   
-        base('People').select({
+    try {
+        base('Grid view').select({
             view: "Grid view"
         }).eachPage(function page(records) {
             records.forEach( async (record) => {
-             const {  personName, 
-                      position,   
-                      personLinkedIn,
-                      personEmail, 
-                      personTwitter, 
-                      RecordId
+             const {  
+                name,
+                country,
+                type,
+                investmentIndustryOrTechnology,
+                stage,
+                investmentCountry,
+                ticketSize,
+                range,
+                companyWebsideURL,
+                companyLinkedInURL,
+                companyTwitterURL,
+                about,
+                //companyLogo,
+                recordID,
+                created
                          } = record.fields;
-        // let randomPeople = await People.findOne({personName }); 
-        // console.log(randomPeople)
-        // if (randomPeople) {
-            let updated = await People.findOneAndUpdate({personName},()=> ({
-                    //   position,   
-                    //   personLinkedIn,
-                    //   personEmail, 
-                    //   personTwitter, 
-                    //   RecordId
-                                  }));
-            console.log(updated, "update");
-            if(!updated) {
-                let randomPeople= new People({
-                    personName, 
-                    position,  
-                    personLinkedIn,
-                    personEmail, 
-                    personTwitter, 
-                    RecordId
-                });
-                console.log(randomPeople)
-                await randomPeople.save()
-                console.log(randomPeople)
-            }             
+        let company = await Company.findOne({
+            name,
+        });  
+            
+        if (company) {
+           let updated = await Company.findOneAndUpdate({name}, {
+                name,
+                country,
+                type,
+                investmentIndustryOrTechnology,
+                stage,
+                investmentCountry,
+                ticketSize,
+                range,
+                companyWebsideURL,
+                companyTwitterURL,
+                about,
+                //companyLogo,
+                recordID,
+                created},
+                { new: true });
+                console.log(updated, 'update')
+            
+        }else{                
+            let newCompany= await Company.create({
+                    name,
+                    country,
+                    type,
+                    investmentIndustryOrTechnology,
+                    stage,
+                    investmentCountry,
+                    ticketSize,
+                    range,
+                    companyWebsideURL,
+                    companyLinkedInURL,
+                    companyTwitterURL,
+                    about,
+                  //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
+                    recordID,
+                    created
+            });
+                
+                console.log(newCompany);
+             }
+            });
+        
         });
-    //    console.log(new Date().toLocaleString())
-    //     const pl = await People.create( peoples );
-    //     console.log(pl)
-    });
     }
     catch (err) {
         console.log(err);
     }
 });
-
-
-
-
-// cron.schedule('* * * * * *', async () => {
-//     //const companies = [];
-//     try {
-//         // const randomCompany = await People.findOne({});
-//         // if (randomCompany) {
-//         //     await Company.collection.drop();
-//         // }
-       
-//         await base('Grid view').select({
-//             view: "Grid view"
-//         }).eachPage(function page(records) {
-//             records.forEach( async (record) => {
-//              const {  
-//                 Name,
-//                 Country,
-//                 Type,
-//                 InvestmentIndustryOrTechnology,
-//                 Stage,
-//                 InvestmentCountry,
-//                 TicketSize,
-//                 Range,
-//                 CompanyWebsideURL,
-//                 CompanyLinkedInURL,
-//                 CompanyTwitterURL,
-//                 About,
-//                 CompanyLogo,
-//                 RecordID,
-//                 created
-//                          } = record.fields;
-                
-//             let company = await Company.findOne({Name}); 
-//                if (company) {
-//                   await fundraising.Company.findOneAndUpdate(
-//                     Country,
-//                 Type,
-//                 InvestmentIndustryOrTechnology,
-//                 Stage,
-//                 InvestmentCountry,
-//                 TicketSize,
-//                 Range,
-//                 CompanyWebsideURL,
-//                 CompanyLinkedInURL,
-//                 CompanyTwitterURL,
-//                 About,
-//                 CompanyLogo,
-//                 RecordID,
-//                 created,
-//                      { upsert: true, useFindAndModify: false });
-//                 }else{                
-//                   company= new Company({
-//                     Name,
-//                     Country,
-//                     Type,
-//                     InvestmentIndustryOrTechnology,
-//                     Stage,
-//                     InvestmentCountry,
-//                     TicketSize,
-//                     Range,
-//                     CompanyWebsideURL,
-//                     CompanyLinkedInURL,
-//                     CompanyTwitterURL,
-//                     About,
-//                     CompanyLogo:  CompanyLogo ?  CompanyLogo[0].url : undefined,
-//                     RecordID,
-//                     created
-//                 });
-                
-//                 console.log(company)
-//                 await company.save()
-//                 //companies.push(company);
-//              }
-//             });
-//             //fetchNextPage();
-//         });
-//         //await Company.create(companies);
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// });

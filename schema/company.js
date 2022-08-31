@@ -7,11 +7,11 @@ const CompanySchema = new Schema(
             required: false
         },
         country: { 
-            type: Object,
+            type: Array,
             required: false
         },
         type: { 
-            type: Object,
+            type: Array,
             name:{
                 type:String
             },
@@ -22,23 +22,57 @@ const CompanySchema = new Schema(
         },
         investmentIndustryOrTechnology: { 
             type: Array,
-            required: false
+            name:{
+                type:String
+            },
+            vote:{
+                type:Number,
+                default: 0
+            }
         },
         stage: { 
-            type: Array, 
-            required: false
+            type: Array,
+            name:{
+                type:String
+            },
+            vote:{
+                type:Number,
+                default: 0
+            }
         },
         investmentCountry: { 
-            type: Array, 
-            required: false
+            type: Array,
+            name:{
+                type:String
+            },
+            vote:{
+                type:Number,
+                default: 0
+            }
         },
         ticketSize: { 
-            type: Array, 
-            required: false
+            type: Array,
+            name:{
+                type:String
+            },
+            vote:{
+                type:Number,
+                default: 0
+            }
         },
         range: { 
             type: Array, 
             required: false
+        },
+        headquarter:{
+            type: Array,
+            name:{
+                type:String
+            },
+            vote:{
+                type:Number,
+                default: 0
+            } 
         },
         companyWebsideURL: { 
             type: String, 

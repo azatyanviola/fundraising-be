@@ -85,7 +85,7 @@ const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process
                     recordID,
                     created
                 },
-                    { new: true });
+                    { new: true }).populate('people');
                 console.log(updated, 'update')
                 if (!updated) {
                     let newCompany = await Company.create({
@@ -114,4 +114,4 @@ const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process
     catch (err) {
         console.log(err);
     }
-})()
+})();

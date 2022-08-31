@@ -5,113 +5,115 @@ const Company = require('../schema/company');
 const airtable = require('airtable');
 require('dotenv').config();
 const mongoose = require('mongoose');
+const {
+    companyDataMerge,
+    peopleDataMerge
+} = require('../heplers/dataMerge');
+
 
 (async () => {
     await mongoose.connect(process.env.DB_URL);
     console.log('success')
-
 })();
 
 
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
-// (async () => {
-//     try {
-//         base('People').select({
-//             view: "Grid view"
-//         }).eachPage(function page(records) {
-//             records.forEach(async (record) => {
-//                 const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
-//                 let updated = await People.findOneAndUpdate({ personName }, { personName, position, personLinkedIn, personEmail, personTwitter, RecordId }, { new: true });
-//                 console.log(updated, "updated")
-//                 if (!updated) {
-//                     let newPeople = await People.create({
-//                         personName,
-//                         position,
-//                         personLinkedIn,
-//                         personEmail,
-//                         personTwitter,
-//                         RecordId
-//                     });
-//                     console.log(newPeople);
-//                 }
-//             });
-//         });
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// })();
-
-
-
-
 (async () => {
     try {
-        base('Grid view').select({
+        base('People').select({
             view: "Grid view"
         }).eachPage(function page(records) {
             records.forEach(async (record) => {
-                const {
-                    name,
-                    country,
-                    type,
-                    investmentIndustryOrTechnology,
-                    stage,
-                    investmentCountry,
-                    ticketSize,
-                    range,
-                    companyWebsideURL,
-                    companyLinkedInURL,
-                    companyTwitterURL,
-                    about,
-                    //companyLogo,
-                    recordID,
-                    created
-                } = record.fields;
-                let updated = await Company.findOneAndUpdate({ name }, {
-                    name,
-                    country,
-                    type,
-                    investmentIndustryOrTechnology,
-                    stage,
-                    investmentCountry,
-                    ticketSize,
-                    range,
-                    companyWebsideURL,
-                    companyTwitterURL,
-                    about,
-                    //companyLogo,
-                    recordID,
-                    created
-                },
-                    { new: true }).populate('people');
-                console.log(updated, 'update')
-                if (!updated) {
-                    let newCompany = await Company.create({
-                        name,
-                        country,
-                        type,
-                        investmentIndustryOrTechnology,
-                        stage,
-                        investmentCountry,
-                        ticketSize,
-                        range,
-                        companyWebsideURL,
-                        companyLinkedInURL,
-                        companyTwitterURL,
-                        about,
-                        //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
-                        recordID,
-                        created
+                const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
+                let dbData = await People.findOne({ personName });
+                if (dbData) {
+                    let update = peopleDataMerge({
+                        airtableData: record.fields,
+                        dbData
+                    })
+                    if (Object.keys(update).length) {
+                        let res = await People.updateOne({
+                            id: dbData.id,
+                        }, update);
+                    }
+                } else {
+                    let newPeople = await People.create({
+                        personName,
+                        position,
+                        personLinkedIn,
+                        personEmail,
+                        personTwitter,
+                        RecordId
                     });
-                    console.log(newCompany);
                 }
             });
-
         });
     }
     catch (err) {
         console.log(err);
     }
 })();
+
+
+// (async () => {
+//     try {
+//         base('Grid view').select({
+//             view: "Grid view"
+//         }).eachPage(function page(records) {
+//             records.forEach(async (record) => {
+//                 let dbData = await Company.findOne({ name: record.fields.name });
+//                 if (dbData) {
+//                     let update = companyDataMerge({
+//                         airtableData: record.fields,
+//                         dbData
+//                     })
+//                     if (Object.keys(update).length) {
+//                         Company.updateOne({
+//                             id: dbData.id,
+//                         }, update);
+//                     }
+//                 } else {
+//                     const {
+//                         name,
+//                         country,
+//                         type,
+//                         investmentIndustryOrTechnology,
+//                         stage,
+//                         investmentCountry,
+//                         ticketSize,
+//                         range,
+//                         companyWebsideURL,
+//                         companyLinkedInURL,
+//                         companyTwitterURL,
+//                         about,
+//                         //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
+//                         recordID,
+//                         created
+//                     } = record.fields;
+//                     let newCompany = await Company.create({
+//                         name,
+//                         country,
+//                         type,
+//                         investmentIndustryOrTechnology,
+//                         stage,
+//                         investmentCountry,
+//                         ticketSize,
+//                         range,
+//                         companyWebsideURL,
+//                         companyLinkedInURL,
+//                         companyTwitterURL,
+//                         about,
+//                         //  companyLogo:  companyLogo ?  companyLogo[0].url : undefined,
+//                         recordID,
+//                         created
+//                     });
+//                 }
+//             });
+
+//         });
+//     }
+//     catch (err) {
+//         console.log(err);
+//     }
+// })();

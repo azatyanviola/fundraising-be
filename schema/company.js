@@ -20,7 +20,7 @@ const CompanySchema = new Schema(
                 default: 0
             }
         },
-        investmentIndustryOrTechnology: { 
+        industry: { 
             type: Array,
             name:{
                 type:String

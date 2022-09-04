@@ -33,9 +33,9 @@ const PeopleSchema = new Schema(
             sparse:true
         },
         RecordId: { 
-            type: String, 
-            required: false
-        },
+    
+            type: Array,
+        }
         // created: {
         //     type: Date,
         //     default:Date.now,

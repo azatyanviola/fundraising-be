@@ -5,19 +5,28 @@ const companyDataMerge = ({
     const mergeables = [
         "country",
         "type",
-        "investmentIndustryOrTechnology",
+        "industry",
         "stage",
-        "investmentCountry",
+        "location",
         "ticketSize",
+        "headquarter"
     ]
     const allFields = [
         ...mergeables,
         "range",
-        "companyWebsideURL",
-        "companyTwitterURL",
+        "website",
+        "fasebook",
+        "linkedIn",
+        "twitter",
+        "instagram",
+        "youtube",
+        "mail",
+        "medium",
         "about",
+        "logoUrl",
         //"companyLogo",
         "recordID",
+        "peopleRecordId",
         "created"
     ]
 
@@ -81,10 +90,12 @@ const peopleDataMerge = ({
     dbData
 }) => {
     const fields = [
+        "personName",
         "position",
         "personLinkedIn",
         "personEmail",
         "personTwitter",
+        "RecordId"
     ]
     let updatedObj = {}
     for (let key in airtableData) {
@@ -100,6 +111,5 @@ module.exports = {
     companyDataMerge,
     peopleDataMerge
 }
-
 
 

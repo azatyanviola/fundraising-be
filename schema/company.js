@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+//const People = require('./people');
 
 const CompanySchema = new Schema(
     {
@@ -40,7 +41,7 @@ const CompanySchema = new Schema(
                 default: 0
             }
         },
-        investmentCountry: { 
+        location: { 
             type: Array,
             name:{
                 type:String
@@ -49,7 +50,7 @@ const CompanySchema = new Schema(
                 type:Number,
                 default: 0
             }
-        },
+       },
         ticketSize: { 
             type: Array,
             name:{
@@ -74,61 +75,75 @@ const CompanySchema = new Schema(
                 default: 0
             } 
         },
-        companyWebsideURL: { 
+        webside: { 
             type: String, 
             required: false
         },
-        companyLinkedInURL: { 
+        fasebook: { 
             type: String, 
             required: false
         },
-        companyTwitterURL: { 
+        linkedIn: { 
             type: String, 
             required: false
         },
-        // companyCrunchbaseUrl: { 
-        //     type: String, 
-        //     required: false
-        // },
-        // companyInstagram: { 
-        //     type: String, 
-        //     required: false
-        // },
-        // companyYoutubeUrl: { 
-        //     type: String, 
-        //     required: false
-        // },
-        // companyMailUrl: { 
-        //     type: String, 
-        //     required: false
-        // },
-        // companyMediumUrl: { 
-        //     type: String, 
-        //     required: false
-        // },
-
+        twitter: { 
+            type: String, 
+            required: false
+        },
+        crunchbase: { 
+            type: String, 
+            required: false
+        },
+        instagram: { 
+            type: String, 
+            required: false
+        },
+        youtube: { 
+            type: String, 
+            required: false
+        },
+        mail: { 
+            type: String, 
+            required: false
+        },
+        medium: { 
+            type: String, 
+            required: false
+        },
         about:{
             type: String
         },
-        // companyLogo: { 
-        //     type: String, 
-        //     required: false
-        // },
+        companyLogo: { 
+                data: Buffer,
+                contentType: String
+        },
+        logoUrl: { 
+            type: String, 
+            required: false
+        },
         recordID: { 
             type: String, 
             required: false
         },
+        peopleRecordId: { 
+            type: Array,
+        },
+        // people: { 
+        //     type: Array,
+        // },
         created: {
             type: Date,
             default:Date.now,
           },
-        people: [{
-            type:Schema.Types.ObjectId,
-            ref: 'People'
-        }]
+       
     } 
     
 );
+
+
+
+
 
 
 

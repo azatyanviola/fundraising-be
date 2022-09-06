@@ -29,25 +29,149 @@ const server = http.createServer(app);
 
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
- 
+
+
+app.get('/airtable_people', async (req, res) => {
+    try {
+        base('People').select({
+            view: "Grid view"
+        }).eachPage(function page(records) {
+            records.forEach(async (record) => {
+                const { personName, position, personLinkedIn, personEmail, personTwitter, RecordId } = record.fields;
+                let dbData = await People.findOne({ personName });
+                if (dbData) {
+                    let update = peopleDataMerge({
+                        airtableData: record.fields,
+                        dbData
+                    })
+                    if (Object.keys(update).length) {
+                        let res = await People.updateOne({
+                            id: dbData.id,
+                        }, update);
+                    }
+                } else {
+                    let newPeople = await People.create({
+                        personName,
+                        position,
+                        personLinkedIn,
+                        personEmail,
+                        personTwitter,
+                        RecordId
+                    });
+                }
+            });
+        });
+        return res.send({ message: 'The data successfully saved' });
+    }
+    catch (err) {
+      return res.send({ message: 'The internal server error' });
+    }
+ });
 
 
 
-  (async () => {
-    let queryObject = [
-        {
-           $lookup:
-              {
-                 from: "peoples",
-                 localField: "peopleRecordId",
-                 foreignField: "RecordId",
-                 as: "people"
-             }
-        }          
-     ];
-    let db = await Company.aggregate(queryObject);
-    console.log(db);
-})();
+
+
+
+app.get('/airtable_company', async (req, res) => {
+        try {
+            base('Companies').select({
+                view: "Grid view"
+            }).eachPage(function page(records) {
+                records.forEach(async (record) => {
+                    let dbData = await Company.findOne({ name: record.fields.name });
+                    if (dbData) {
+                        let update = companyDataMerge({
+                            airtableData: record.fields,
+                            dbData
+                        })
+                        if (Object.keys(update).length) {
+                            Company.updateOne({
+                                id: dbData.id,
+                            }, update);
+                        }
+                    } else {
+                        const {
+                            name,
+                            country,
+                            type,
+                            industry,
+                            stage,
+                            location,
+                            ticketSize,
+                            range,
+                            headquarter,
+                            website,
+                            twitter,
+                            fasebook,
+                            linkedIn,
+                            crunchbase,
+                            instagram,
+                            youtube,
+                            mail,
+                            medium,
+                            about,
+                            logoUrl,
+                            recordID,
+                            peopleRecordId,
+                            created
+                        } = record.fields;
+    
+                        let newCompany = await Company.create({
+                            name,
+                            country,
+                            type,
+                            industry,
+                            stage,
+                            location,
+                            ticketSize,
+                            range,
+                            headquarter,
+                            website,
+                            twitter,
+                            fasebook,
+                            linkedIn,
+                            crunchbase,
+                            instagram,
+                            youtube,
+                            mail,
+                            medium,
+                            about,
+                            logoUrl,
+                            recordID,
+                            peopleRecordId,
+                            created
+                        });
+                    }
+                });
+    
+            });
+              return res.send({ message: 'The data successfully saved' });
+        }
+        catch (err) {
+            return res.send({ message: 'The internal server error' });
+        }
+    });
+
+
+
+//   (async () => {
+//     let queryObject = [
+//         {
+//            $lookup:
+//               {
+//                  from: "People",
+//                  localField: "peopleRecordId",
+//                  foreignField: "RecordId",
+//                  as: "people"
+//              }
+//         }
+                   
+//      ];
+
+//     let db = await Company.aggregate(queryObject);
+//     console.log(db);
+// })();
 
 
 
@@ -64,7 +188,8 @@ const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process
 //                  foreignField: "RecordId",
 //                  as: "people"
 //              }
-//         }            
+//         }
+                   
 //      ];
 
 //      let db = await Company.aggregate(queryObject);
